@@ -16,17 +16,35 @@
 
 package com.salesforce.cdp.queryservice.core;
 
-import com.google.common.annotations.VisibleForTesting;
-import lombok.extern.slf4j.Slf4j;
+import static com.salesforce.cdp.queryservice.util.ParamEscapeUtils.getEscapedString;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.sql.*;
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.NClob;
+import java.sql.ParameterMetaData;
+import java.sql.PreparedStatement;
+import java.sql.Ref;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.RowId;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLWarning;
+import java.sql.SQLXML;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class QueryServicePreparedStatement extends QueryServiceAbstractStatement implements PreparedStatement {
@@ -99,7 +117,7 @@ public class QueryServicePreparedStatement extends QueryServiceAbstractStatement
 
     @Override
     public void setString(int parameterIndex, String x) throws SQLException {
-        parameters.put(parameterIndex, "'" + x + "'");
+        parameters.put(parameterIndex, x);
     }
 
     @Override
@@ -552,8 +570,12 @@ public class QueryServicePreparedStatement extends QueryServiceAbstractStatement
                 throw new SQLException("Not enough parameters");
             }
             Object parameter = parameters.get(parameterIndex++);
-            sqlQuery = sqlQuery.replaceFirst("\\?", parameter == null ? "null" : parameter.toString());
+            sqlQuery = sqlQuery.replaceFirst("\\?", parameter == null ? "null" : getEscapedString(parameter));
         }
         return sqlQuery;
     }
+
+
+
+
 }
